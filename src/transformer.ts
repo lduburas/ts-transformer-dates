@@ -15,7 +15,6 @@ const isToDatesImportExpression = (node: ts.Node): node is ts.ImportDeclaration 
             : require.resolve(module);
         return indexJs === modulePath;
     } catch (e) {
-        console.log(e)
         return false;
     }
 }
@@ -38,22 +37,29 @@ const isToDatesCallExpression = (node: ts.Node, typeChecker: ts.TypeChecker): no
         && declaration.name.getText() === 'toDates';
 }
 
+function unbox(typeNode: ts.TypeNode) {
+    while (ts.isArrayTypeNode(typeNode)) {
+        typeNode = (typeNode as ts.ArrayTypeNode).elementType;
+    }
+    return typeNode
+}
+
 function convertDates(type: ts.Type, typeChecker: ts.TypeChecker, prefix: ts.StringLiteral[], node: ts.Node): ts.ArrayLiteralExpression[] {
     const properties = typeChecker.getPropertiesOfType(type);
     const getTypeOfProperty = (property: ts.Symbol) => {
-        const propertyType = (property.valueDeclaration as ts.PropertyDeclaration)?.type as ts.TypeNode;
-        return typeChecker.getTypeFromTypeNode(propertyType);
+        const propertyType = unbox((property.valueDeclaration as ts.PropertyDeclaration)?.type as ts.TypeNode);
+        return typeChecker.getTypeFromTypeNode(propertyType).getNonNullableType();
     }
-    const isInterface = (property: ts.Symbol): boolean => {
-        const type = typeChecker.getTypeOfSymbolAtLocation(property, node);
-        return type.isClassOrInterface();
+    const isInterfaceOrArray = (property: ts.Symbol): boolean => {
+        const propertyType = (property.valueDeclaration as ts.PropertyDeclaration)?.type as ts.TypeNode;
+        return typeChecker.getTypeFromTypeNode(propertyType).isClassOrInterface() || ts.isArrayTypeNode(propertyType);
     }
     return properties.filter(property => {
-        if (isInterface(property))
+        if (isInterfaceOrArray(property))
             return true;
         return getTypeOfProperty(property)?.getSymbol()?.getName() === 'Date';
     }).reduce((props, property) => {
-        if (isInterface(property)) {
+        if (isInterfaceOrArray(property)) {
             const propertyType = getTypeOfProperty(property);
             if (propertyType.getSymbol()?.getName() !== 'Date')
                 return props.concat(convertDates(propertyType, typeChecker, [ts.createStringLiteral(property.getName())], node));
@@ -87,7 +93,7 @@ export default function transformer(program: ts.Program): ts.TransformerFactory<
             }
 
             if (isToDatesCallExpression(node, typeChecker) && node.typeArguments) {
-                const type = typeChecker.getTypeFromTypeNode(node.typeArguments[0]);
+                const type = typeChecker.getTypeFromTypeNode(unbox(node.typeArguments[0]));
                 return ts.createCall(
                     ts.createPropertyAccess(transformerDates, toDatesByArray),
                     undefined,
