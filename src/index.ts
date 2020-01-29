@@ -1,4 +1,3 @@
-import transformer from './transformer';
 import { isArray, isString } from 'util';
 
 export declare function toDates<T extends object>(z: any): void;
@@ -33,5 +32,3 @@ export function toDatesByArray(value: any, paths: string[][]) {
     paths.forEach(path => convertPath(value, path));
     return value;
 }
-
-export default transformer;
