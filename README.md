@@ -12,7 +12,7 @@ TypeScript >= 2.4.1
 ## In TypeScript source
 
 ```ts
-import { toDates } from "../ts-transformer-dates";
+import { toDates } from 'ts-transformer-dates';
 
 interface Values {
   dateFrom: Date;
