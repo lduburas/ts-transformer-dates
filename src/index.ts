@@ -1,8 +1,8 @@
 import { isArray, isString } from 'util';
 
-export declare function toDates<T extends object>(z: any): void;
+export declare function toDates<T extends object>(value: any): T;
 
-export function toDatesByArray(value: any, paths: string[][]) {
+export function toDatesByArray(value: any, paths: string[][]): any {
 
     const convertPath = (value: any, path: string[]) => {
         let i = 0;
