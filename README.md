@@ -1,6 +1,6 @@
 # Typescript Transformer Dates
-Converts object fields values from number or string to Date according to provided type having Date fields.
-Main purpose to convert parsed JSON objects to match given TypeScript interface. 
+Converts object properties from number or string to Date according to provided type having Date fields.
+Aimed to convert parsed JSON objects to match given TypeScript interface. 
 
 Inspired by [ts-transformer-keys](https://github.com/kimamula/ts-transformer-keys).
 
@@ -14,24 +14,22 @@ TypeScript >= 2.4.1
 ```ts
 import { toDates } from 'ts-transformer-dates';
 
-interface Values {
+interface Range {
   dateFrom: Date;
   dateTo: Date;
-  array: Date[];
-  ignoredField: string;
+  ignoredField: number;
 }
 
-const values = {
+const value = {
   dateFrom: "2020-01-12T03:25:45.000Z",
-  dateTo: "2020-02-12T03:25:45.000Z", 
-  array: [1578799545000, 1581477945000, "2020-02-12T03:25:45.000Z"],
-  ignoredField: 1578799545000,
+  dateTo: 1578799545000, 
+  ignoredField: "2020-02-12T03:25:45.000Z",
   extraField: "brown fox"
 }
 
-toDates<Values>(values);
+toDates<Range>(value);
 
-console.log(values);
+console.log(value);
 ```
 
 Outputs:
@@ -39,11 +37,6 @@ Outputs:
 {
   dateFrom: 2020-01-12T03:25:45.000Z,
   dateTo: 2020-02-12T03:25:45.000Z,
-  array: [
-    2020-01-12T03:25:45.000Z,
-    2020-02-12T03:25:45.000Z,
-    2020-02-12T03:25:45.000Z
-  ],
   ignoredField: 1578799545000,
   extraField: 'brown fox'
 }

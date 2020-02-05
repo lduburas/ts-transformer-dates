@@ -62,7 +62,7 @@ function convertDates(type: ts.Type, typeChecker: ts.TypeChecker, prefix: ts.Str
         if (isInterfaceOrArray(property)) {
             const propertyType = getTypeOfProperty(property);
             if (propertyType.getSymbol()?.getName() !== 'Date')
-                return props.concat(convertDates(propertyType, typeChecker, [ts.createStringLiteral(property.getName())], node));
+                return props.concat(convertDates(propertyType, typeChecker, prefix.concat(ts.createStringLiteral(property.getName())), node));
         }
         return props.concat(ts.createArrayLiteral(prefix.concat([ts.createLiteral(property.getName())])));
     }, [] as ts.ArrayLiteralExpression[]);
