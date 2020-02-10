@@ -1,8 +1,10 @@
 import { isArray, isString } from 'util';
 
-export declare function toDates<T extends object>(value: any): T;
+type Converter = (v: string | number) => Date
 
-export function toDatesByArray(value: any, paths: string[][]): any {
+export declare function toDates<T extends object>(value: any, converter?: Converter): T;
+
+export function toDatesByArray(value: any, paths: string[][], converter: Converter = (v) => new Date(v)): any {
 
     const convertPath = (value: any, path: string[]) => {
         let i = 0;
@@ -19,7 +21,7 @@ export function toDatesByArray(value: any, paths: string[][]): any {
                 const subPath = path.slice(i);
                 obj.forEach((e, i) => obj[i] = convertPath(e, subPath));
             } else if (i === path.length) {
-                const converted = obj ? new Date(obj) : null;
+                const converted = obj ? converter(obj) : null;
                 if (parent)
                     parent[path[i - 1]] = converted;
                 else

@@ -94,11 +94,16 @@ export default function transformer(program: ts.Program): ts.TransformerFactory<
 
             if (isToDatesCallExpression(node, typeChecker) && node.typeArguments) {
                 const type = typeChecker.getTypeFromTypeNode(unbox(node.typeArguments[0]));
+                const toDatesByArrayArgs = [
+                    node.arguments[0],
+                    ts.createArrayLiteral(convertDates(type, typeChecker, [], node))];
+                if (node.arguments.length > 1)
+                    toDatesByArrayArgs.push(node.arguments[1]);
                 return ts.createCall(
                     ts.createPropertyAccess(transformerDates, toDatesByArray),
                     undefined,
-                    [node.arguments[0],
-                    ts.createArrayLiteral(convertDates(type, typeChecker, [], node))]);
+                    toDatesByArrayArgs
+                );
             }
 
             return ts.visitEachChild(node, (child) => visit(child), context);

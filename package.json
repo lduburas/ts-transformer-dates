@@ -1,6 +1,6 @@
 {
   "name": "ts-transformer-dates",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "url": "git+https://github.com/lduburas/ts-transformer-dates.git"
   },
   "keywords": [
-    "Date"
+    "Date", "JSON", "TypeScript"
   ],
   "author": "lduburas",
   "license": "ISC",

@@ -1,4 +1,4 @@
-# Typescript Transformer Dates
+# TypeScript Transformer Dates
 Converts object properties from number or string to Date according to provided type having Date fields.
 Aimed to convert parsed JSON objects to match given TypeScript interface. 
 
@@ -37,7 +37,7 @@ Outputs:
 {
   dateFrom: 2020-01-12T03:25:45.000Z,
   dateTo: 2020-02-12T03:25:45.000Z,
-  ignoredField: 1578799545000,
+  ignoredField: '2020-02-12T03:25:45.000Z',
   extraField: 'brown fox'
 }
 ```
