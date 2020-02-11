@@ -17,11 +17,10 @@ const isToDatesImportExpression = (node: ts.Node): node is ts.ImportDeclaration 
     } catch (e) {
         return false;
     }
-}
+};
 
 const isToDatesCallExpression = (node: ts.Node, typeChecker: ts.TypeChecker): node is ts.CallExpression => {
-    if (!ts.isCallExpression(node))
-        return false;
+    if (!ts.isCallExpression(node)) return false;
 
     const signature = typeChecker.getResolvedSignature(node);
     if (typeof signature === 'undefined') {
@@ -30,42 +29,61 @@ const isToDatesCallExpression = (node: ts.Node, typeChecker: ts.TypeChecker): no
 
     const { declaration } = signature;
 
-    return !!declaration
-        && !ts.isJSDocSignature(declaration)
-        && (path.join(declaration.getSourceFile().fileName) === indexTs)
-        && !!declaration.name
-        && declaration.name.getText() === 'toDates';
-}
+    return (
+        !!declaration &&
+        !ts.isJSDocSignature(declaration) &&
+        path.join(declaration.getSourceFile().fileName) === indexTs &&
+        !!declaration.name &&
+        declaration.name.getText() === 'toDates'
+    );
+};
 
 function unbox(typeNode: ts.TypeNode) {
     while (ts.isArrayTypeNode(typeNode)) {
         typeNode = (typeNode as ts.ArrayTypeNode).elementType;
     }
-    return typeNode
+    return typeNode;
 }
 
-function convertDates(type: ts.Type, typeChecker: ts.TypeChecker, prefix: ts.StringLiteral[], node: ts.Node): ts.ArrayLiteralExpression[] {
+function convertDates(
+    type: ts.Type,
+    typeChecker: ts.TypeChecker,
+    prefix: ts.StringLiteral[],
+    node: ts.Node
+): ts.ArrayLiteralExpression[] {
     const properties = typeChecker.getPropertiesOfType(type);
     const getTypeOfProperty = (property: ts.Symbol) => {
         const propertyType = unbox((property.valueDeclaration as ts.PropertyDeclaration)?.type as ts.TypeNode);
         return typeChecker.getTypeFromTypeNode(propertyType).getNonNullableType();
-    }
+    };
     const isInterfaceOrArray = (property: ts.Symbol): boolean => {
         const propertyType = (property.valueDeclaration as ts.PropertyDeclaration)?.type as ts.TypeNode;
         return typeChecker.getTypeFromTypeNode(propertyType).isClassOrInterface() || ts.isArrayTypeNode(propertyType);
-    }
-    return properties.filter(property => {
-        if (isInterfaceOrArray(property))
-            return true;
-        return getTypeOfProperty(property)?.getSymbol()?.getName() === 'Date';
-    }).reduce((props, property) => {
-        if (isInterfaceOrArray(property)) {
-            const propertyType = getTypeOfProperty(property);
-            if (propertyType.getSymbol()?.getName() !== 'Date')
-                return props.concat(convertDates(propertyType, typeChecker, prefix.concat(ts.createStringLiteral(property.getName())), node));
-        }
-        return props.concat(ts.createArrayLiteral(prefix.concat([ts.createLiteral(property.getName())])));
-    }, [] as ts.ArrayLiteralExpression[]);
+    };
+    return properties
+        .filter(property => {
+            if (isInterfaceOrArray(property)) return true;
+            return (
+                getTypeOfProperty(property)
+                    ?.getSymbol()
+                    ?.getName() === 'Date'
+            );
+        })
+        .reduce((props, property) => {
+            if (isInterfaceOrArray(property)) {
+                const propertyType = getTypeOfProperty(property);
+                if (propertyType.getSymbol()?.getName() !== 'Date')
+                    return props.concat(
+                        convertDates(
+                            propertyType,
+                            typeChecker,
+                            prefix.concat(ts.createStringLiteral(property.getName())),
+                            node
+                        )
+                    );
+            }
+            return props.concat(ts.createArrayLiteral(prefix.concat([ts.createLiteral(property.getName())])));
+        }, [] as ts.ArrayLiteralExpression[]);
 }
 
 export default function transformer(program: ts.Program): ts.TransformerFactory<ts.SourceFile> {
@@ -74,21 +92,17 @@ export default function transformer(program: ts.Program): ts.TransformerFactory<
     const toDatesByArray = ts.createIdentifier('toDatesByArray');
 
     return (context: ts.TransformationContext) => {
-
         const visit: ts.Visitor = (node: ts.Node) => {
             if (isToDatesImportExpression(node)) {
-                const importNode = ts.createVariableStatement(
-                    undefined,
-                    [ts.createVariableDeclaration(
+                const importNode = ts.createVariableStatement(undefined, [
+                    ts.createVariableDeclaration(
                         transformerDates,
                         undefined,
-                        ts.createCall(
-                            ts.createIdentifier('require'),
-                            undefined,
-                            [ts.createLiteral('ts-transformer-dates')]
-                        )
-                    )]
-                )
+                        ts.createCall(ts.createIdentifier('require'), undefined, [
+                            ts.createLiteral('ts-transformer-dates')
+                        ])
+                    )
+                ]);
                 return importNode;
             }
 
@@ -96,9 +110,9 @@ export default function transformer(program: ts.Program): ts.TransformerFactory<
                 const type = typeChecker.getTypeFromTypeNode(unbox(node.typeArguments[0]));
                 const toDatesByArrayArgs = [
                     node.arguments[0],
-                    ts.createArrayLiteral(convertDates(type, typeChecker, [], node))];
-                if (node.arguments.length > 1)
-                    toDatesByArrayArgs.push(node.arguments[1]);
+                    ts.createArrayLiteral(convertDates(type, typeChecker, [], node))
+                ];
+                if (node.arguments.length > 1) toDatesByArrayArgs.push(node.arguments[1]);
                 return ts.createCall(
                     ts.createPropertyAccess(transformerDates, toDatesByArray),
                     undefined,
@@ -106,9 +120,9 @@ export default function transformer(program: ts.Program): ts.TransformerFactory<
                 );
             }
 
-            return ts.visitEachChild(node, (child) => visit(child), context);
+            return ts.visitEachChild(node, child => visit(child), context);
         };
 
         return (node: ts.SourceFile) => ts.visitNode(node, visit);
-    }
+    };
 }
