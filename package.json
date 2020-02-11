@@ -19,7 +19,7 @@
     "TypeScript"
   ],
   "author": "lduburas",
-  "license": "ISC",
+  "license": "MIT",
   "files": [
     "lib/**/*"
   ],

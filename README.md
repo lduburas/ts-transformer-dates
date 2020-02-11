@@ -71,4 +71,4 @@ module.exports = {
 
 # License
 
-ISC
+MIT
