@@ -4,6 +4,44 @@ type Converter = (v: string | number) => Date;
 
 export declare function toDates<T extends object>(value: any, converter?: Converter): T;
 
+interface Type {
+    d?: string[];
+    da?: string[];
+    c?: [string, number, boolean?][];
+}
+
+export function applyToDates(value: any, types: Type[], index: number = 0) {
+    const { d, da, c } = types[index];
+
+    d?.forEach(dateField => {
+        const dateFieldValue = value[dateField];
+        if (undefined !== dateFieldValue && null !== dateFieldValue) value[dateField] = new Date(dateFieldValue);
+    });
+
+    da?.forEach(arrayField => {
+        const dateArray = value[arrayField];
+        if (undefined !== dateArray && null !== dateArray)
+            if (Array.isArray(dateArray)) {
+                dateArray.forEach((elem, i) => {
+                    if (undefined !== elem && null !== elem) dateArray[i] = new Date(elem);
+                });
+            } else throw new TypeError(`Array is expected in field ${arrayField}`);
+    });
+
+    c?.forEach(([fieldName, typeIndex, isArray]: [string, number, boolean?]) => {
+        const fieldValue = value[fieldName];
+        if (undefined !== fieldValue && null !== fieldValue) {
+            if (isArray) {
+                if (Array.isArray(fieldValue)) {
+                    fieldValue.forEach(elem => applyToDates(elem, types, typeIndex));
+                } else throw new TypeError(`Array is expected in field ${fieldName}`);
+            } else applyToDates(fieldValue, types, typeIndex);
+        }
+    });
+
+    return value;
+}
+
 export function toDatesByArray(value: any, paths: string[][], converter: Converter = v => new Date(v)): any {
     paths.forEach(path => convertPath(value, path, converter));
     return value;

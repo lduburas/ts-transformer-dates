@@ -1,4 +1,4 @@
-import { toDatesByArray } from '../lib/index';
+import { applyToDates } from '../lib/index';
 
 const inSimple = {
     a: 12345000
@@ -8,8 +8,8 @@ const expSimple = {
     a: new Date(12345000)
 };
 
-test('toDatesByArray simple', () => {
-    expect(toDatesByArray(inSimple, [['a']])).toStrictEqual(expSimple);
+test('applyToDates simple', () => {
+    expect(applyToDates(inSimple, [{ d: ['a'] }])).toStrictEqual(expSimple);
 });
 
 const inNested = {
@@ -28,8 +28,8 @@ const expNested = {
     z: 12345000
 };
 
-test('toDatesByArray nested', () => {
-    expect(toDatesByArray(inNested, [['a'], ['b', 'c']])).toStrictEqual(expNested);
+test('applyToDates nested', () => {
+    expect(applyToDates(inNested, [{ d: ['a'], c: [['b', 1]] }, { d: ['c'] }])).toStrictEqual(expNested);
 });
 
 const inArray = {
@@ -44,6 +44,6 @@ const expArray = {
     z: [new Date(12345000), new Date(54321000)]
 };
 
-test('toDatesByArray arrays', () => {
-    expect(toDatesByArray(inArray, [['b', 'c'], ['z']])).toStrictEqual(expArray);
+test('applyToDates arrays', () => {
+    expect(applyToDates(inArray, [{ d: [], da: ['z'], c: [['b', 1, true]] }, { d: ['c'] }])).toStrictEqual(expArray);
 });
