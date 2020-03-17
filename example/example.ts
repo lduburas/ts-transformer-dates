@@ -2,25 +2,25 @@ import { toDates } from 'ts-transformer-dates';
 import * as moment from 'moment';
 
 interface Range {
-  dateFrom: Date;
-  dateTo: Date;
-  ignoredField: number;
+    dateFrom: Date;
+    dateTo: Date;
+    notes: string;
 }
 
-const value = {
-  dateFrom: "2020-01-12T03:25:45.000Z",
-  dateTo: 1578799545000, 
-  ignoredField: "2020-02-12T03:25:45.000Z",
-  extraField: "brown fox"
-}
+const range = {
+    dateFrom: '2020-01-12T03:25:45.000Z', // date as ISO string
+    dateTo: 1578799545000, // date as number of milliseconds
+    notes: 'brown fox'
+};
 
-const value2 = {
-  dateFrom: "\/Date(1234567000000)\/",
-  dateTo: "\/Date(1234656000000)\/"
-}
+const range2 = {
+    dateFrom: '/Date(1234567000000)/',
+    dateTo: '/Date(1234656000000)/',
+    notes: 'brown fox'
+};
 
-toDates<Range>(value);
-toDates<Range>(value2, netDate => moment(netDate).toDate());
+toDates<Range>(range);
+toDates<Range>(range2, netDate => moment(netDate).toDate());
 
-console.log(value);
-console.log(value2)
+console.log(range);
+console.log(range2);
