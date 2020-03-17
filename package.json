@@ -36,7 +36,8 @@
         "ts-jest": "^25.2.0",
         "tslint": "^6.0.0",
         "tslint-config-prettier": "^1.18.0",
-        "typescript": "^3.7.4"
+        "typescript": "^3.7.4",
+        "minimist": ">=1.2.2"
     },
     "peerDependencies": {
         "typescript": ">=2.4.1"
