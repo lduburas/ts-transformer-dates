@@ -1,5 +1,3 @@
-import { isArray, isString } from 'util';
-
 type Converter = (v: string | number) => Date;
 
 export declare function toDates<T extends object>(value: any, converter?: Converter): T;
@@ -52,13 +50,13 @@ function convertPath(contextValue: any, path: string[], converter: Converter) {
     let parent = null;
     let obj = contextValue;
 
-    while (obj && !isArray(obj) && i < path.length) {
+    while (obj && !Array.isArray(obj) && i < path.length) {
         parent = obj;
         obj = obj[path[i++]];
     }
 
-    if (obj || isString(obj)) {
-        if (isArray(obj)) {
+    if (obj || typeof obj === 'string') {
+        if (Array.isArray(obj)) {
             const subPath = path.slice(i);
             obj.forEach((e, index) => (obj[index] = convertPath(e, subPath, converter)));
         } else if (i === path.length) {
