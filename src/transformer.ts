@@ -56,33 +56,23 @@ function convertDates(
         const propertyType = unbox((property.valueDeclaration as ts.PropertyDeclaration)?.type as ts.TypeNode);
         return typeChecker.getTypeFromTypeNode(propertyType).getNonNullableType();
     };
-    const isInterfaceOrArray = (property: ts.Symbol): boolean => {
-        const propertyType = (property.valueDeclaration as ts.PropertyDeclaration)?.type as ts.TypeNode;
-        return typeChecker.getTypeFromTypeNode(propertyType).isClassOrInterface() || ts.isArrayTypeNode(propertyType);
-    };
     return properties
-        .filter(property => {
-            if (isInterfaceOrArray(property)) return true;
-            return (
-                getTypeOfProperty(property)
-                    ?.getSymbol()
-                    ?.getName() === 'Date'
-            );
-        })
         .reduce((props, property) => {
-            if (isInterfaceOrArray(property)) {
-                const propertyType = getTypeOfProperty(property);
-                if (propertyType.getSymbol()?.getName() !== 'Date')
-                    return props.concat(
-                        convertDates(
-                            propertyType,
-                            typeChecker,
-                            prefix.concat(ts.createStringLiteral(property.getName())),
-                            node
-                        )
-                    );
+            const propertyType = getTypeOfProperty(property);
+            if (typeChecker.typeToString(propertyType) === 'Date') {
+                return props.concat(ts.createArrayLiteral(prefix.concat([ts.createLiteral(property.getName())]))); 
             }
-            return props.concat(ts.createArrayLiteral(prefix.concat([ts.createLiteral(property.getName())])));
+            if (propertyType.isClassOrInterface()) {
+                return props.concat(
+                    convertDates(
+                        propertyType,
+                        typeChecker,
+                        prefix.concat(ts.createStringLiteral(property.getName())),
+                        node
+                    )
+                );
+            }
+            return props;
         }, [] as ts.ArrayLiteralExpression[]);
 }
 
