@@ -2,6 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "noEmitOnError": true,
+    "skipLibCheck": true,
     "suppressImplicitAnyIndexErrors": true,
     "target": "ES5",
     "plugins": [
